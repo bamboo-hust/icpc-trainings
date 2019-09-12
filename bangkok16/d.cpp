@@ -27,26 +27,16 @@ pair<int, int> solve(int a, int b, int c) {
 
 int32_t main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
-    //int T; cin >> T;
-    int T = 100;
+    int T; cin >> T;
     while (T--) {
         int ax, ay, bx, by, k;
-        //cin >> ax >> ay >> bx >> by >> k;
-        ax = rand() % INF - rand() % INF;
-        ay = rand() % INF - rand() % INF;
-        bx = rand() % INF - rand() % INF;
-        by = rand() % INF - rand() % INF;
-        k = 10;
-        cout << ax << ' ' << ay << ' ' << bx << ' ' << by << ' ' << k << endl;
-
+        cin >> ax >> ay >> bx >> by >> k;
         int x0 = bx - ax;
         int y0 = by - ay;
-        pair<int, int> C = solve(y0, -x0, __gcd(abs(x0), abs(y0)) + ax * y0 - ay * x0);
-        cout << C.first << ' ' << C.second << endl;
+        pair<int, int> C = solve(y0, -x0, __gcd(abs(x0), abs(y0)));
         for (int i = 0; i < k; ++i) {
-            int x = C.first - x0 * i;
-            int y = C.second - y0 * i;
-            assert(abs(x) < 1e14);
+            int x = C.first + x0 * i + ax;
+            int y = C.second + y0 * i + ay;
             cout << x << ' ' << y << '\n';
         }
     }
