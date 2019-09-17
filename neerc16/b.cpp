@@ -29,7 +29,7 @@ void init() {
 }
 
 void push_edge(int u, int v) {
-    cerr << "push_edge " << u << ' ' << v << endl;
+    //cerr << "push_edge " << u << ' ' << v << endl;
     adj[u].push_back(v);
 }
 
@@ -55,7 +55,7 @@ void tarjan(int u) {
 bool solve() {
     for (int i = 0; i < n * 2; ++i) if (root[i] == -1) {
         tarjan(i);
-        cerr << "tarjan " << i << ' ' << root[i] << endl;
+        //cerr << "tarjan " << i << ' ' << root[i] << endl;
     }
     for (int i = 0; i < n * 2; i += 2) {
         if (root[i] == root[i ^ 1]) return 0;
@@ -65,7 +65,7 @@ bool solve() {
 }
 
 void update(int a, int b) {
-    cerr << "update " << a << ' ' << b << ' ' << s[a].first << ' ' << s[b].first << endl;
+    //cerr << "update " << a << ' ' << b << ' ' << s[a].first << ' ' << s[b].first << endl;
     int x = unknown_pos[a];
     int y = unknown_pos[b];
     if (x == -1) {
@@ -77,24 +77,44 @@ void update(int a, int b) {
         exit(0);
     }
     if (y == -1) {
+        if (x >= s[b].first.size()) {
+            cout << "NO\n";
+            exit(0);
+        }
         if (s[b].first[x] == '0') {
-            push_edge(a * 2, a * 2 + 1);
-        } else {
+            //cerr << "must be one " << s[a].first << endl;
             push_edge(a * 2 + 1, a * 2);
+        } else {
+            //cerr << "must be zero " << s[a].first << endl;
+            push_edge(a * 2, a * 2 + 1);
         }
         return;
     }
     if (x == y) {
         push_edge(a * 2, b * 2 + 1);
+        push_edge(b * 2, a * 2 + 1);
+        push_edge(b * 2 + 1, a * 2);
         push_edge(a * 2 + 1, b * 2);
     } else if (max(x, y) < min(s[a].first.size(), s[b].first.size())) {
         push_edge((a * 2 + 1) ^ (s[b].first[x] - '0'), (b * 2) ^ (s[a].first[y] - '0'));
         push_edge((b * 2 + 1) ^ (s[a].first[y] - '0'), (a * 2) ^ (s[b].first[x] - '0'));
+    } else {
+        if (x > y) {
+            swap(x, y);
+            swap(a, b);
+        }
+        if (s[b].first[x] == '0') {
+            //cerr << "must be one " << s[a].first << endl;
+            push_edge(a * 2 + 1, a * 2);
+        } else {
+            //cerr << "must be zero " << s[a].first << endl;
+            push_edge(a * 2, a * 2 + 1);
+        }
     }
 }
 
 void add(const string &s, int id) {
-    cerr << "add " << s << ' ' << id << endl;
+    //cerr << "add " << s << ' ' << id << endl;
     int u = 1;
     for (int i = 0; i < s.size(); ++i) {
         char c = s[i] - '0';
@@ -110,10 +130,16 @@ void add(const string &s, int id) {
         }
     }
     ending[u].push_back(id);
+    if (ending[u].size() > s.size() * 2) {
+        cout << "NO\n";
+        exit(0);
+    }
 }
 
 int main() {
     ios::sync_with_stdio(false); cin.tie(nullptr);
+    freopen("binary.in", "r", stdin);
+    freopen("binary.out", "w", stdout);
     init();
 
     cin >> n;
@@ -153,7 +179,6 @@ int main() {
     if (solve()) {
         cout << "YES\n";
         for (int i = 0; i < n; ++i) {
-            cerr << i << ' ' << color[i] << endl;
             if (unknown_pos[i] != -1) s[i].first[unknown_pos[i]] = color[i] + '0';
         }
         sort(begin(s), end(s), [](const pair<string, int> &a, const pair<string, int> &b){
