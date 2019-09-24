@@ -1,0 +1,54 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+const int N = 100010;
+const int INF = 1e9 + 100;
+
+int n, t;
+int d[N], w[N], id[N];
+vector<int> adj[N];
+int canTake[N], used[N];
+
+void dfsInit(int u, int minVal) {
+    minVal = min(minVal, w[u]);
+    canTake[u] = minVal;
+    for (int v : adj[u]) {
+        dfsInit(v, minVal);
+    }
+}
+
+void dfs(int u) {
+    used[u] = 1;
+    for (int v : adj[u]) {
+        if (!used[v]) dfs(v);
+    }
+}
+
+int main() {
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+    cin >> n >> t;
+    for (int i = 1; i <= n; i++) {
+        int p;
+        cin >> d[i] >> p >> w[i];
+        adj[p].push_back(i);
+        id[i] = i;
+    }
+    w[0] = INF;
+    sort(id + 1, id + n + 1, [](int u, int v) {
+        return d[u] > d[v];
+    });
+    dfsInit(0, INF);
+    long long res = 0;
+    for (int i = 1; i <= n; i++) {
+        int u = id[i];
+        if (used[u]) continue;
+        int now = min(canTake[u], t);
+        t -= now;
+        res += 1ll * now * d[u];
+        dfs(u);
+    }
+    cout << res << endl;
+    return 0;       
+}

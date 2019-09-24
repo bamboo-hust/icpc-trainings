@@ -1,0 +1,156 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+const int N = 100010;
+const int B_SIZE = sqrt(N);
+const int N_BLOCK = N / B_SIZE + 10;
+
+vector<int> vals;
+
+
+struct Block {
+    vector<pair<int, int>> ls;
+    long long sum;
+    int cnt;
+    int l, r;
+    Block() {
+        cnt = sum = 0;
+        l = N, r = 0;
+    }
+    void add(int id, int v) {
+        ls.push_back({v, id});
+        sum += vals[v];
+        cnt++;
+        l = min(l, id);
+        r = max(r, id);
+    }
+    void build() {
+        sort(ls.begin(), ls.end());
+    }
+} b[N_BLOCK];
+
+int n, q;
+int a[N];
+int numBlock = 0;
+long long dp[N_BLOCK][N_BLOCK];
+
+long long prefSum[N_BLOCK][N];
+int prefNum[N_BLOCK][N];
+
+int curNum[N];
+long long curSum[N];
+
+long long getVal(int u, int lu, int ru, int v, int lv, int rv, int f = 0) {
+    long long sum = 0;
+    int cnt = 0;
+    int cur = 0;
+    long long res = 0;
+    for (auto valU : b[u].ls) {
+        if (valU.second < lu || valU.second > ru) continue;
+        while (cur < b[v].ls.size()) {
+            int now = b[v].ls[cur].first;
+            int idNow = b[v].ls[cur].second;
+            cur++;
+            if (idNow < lv || idNow > rv) continue;
+            cnt++;
+            sum += vals[now];
+        }
+        res += 1ll * vals[valU.first] * cnt - sum;
+    }   
+
+    if (!f) res += getVal(v, lv, rv, u, lu, ru, f);
+    return res;
+}
+
+long long getBlockBlock(int l, int r, int ll, int rr) {
+    long long res = 0;
+    for (int i = l; i <= r; i++) {
+        res += dp[i][rr];
+        if (ll > 0) res -= dp[i][ll - 1];
+    }
+    return res;
+}
+
+long long getTailBlock(int l, int r, int ll, int rr) {
+    long long res = 0;
+    for (int i = l; i <= r; i++) {
+        long long sumSmaller = prefSum[rr][a[i]] - (ll > 0 ? prefSum[ll - 1][a[i]] : 0);
+        long long sumBigger = prefSum[rr][N - 1] - (ll > 0 ? prefSum[ll - 1][N - 1] : 0) - sumSmaller;
+
+        int cntSmaller = prefNum[rr][a[i]] - (ll > 0 ? prefNum[ll - 1][a[i]] : 0);
+        int cntBigger = prefNum[rr][N - 1] - (ll > 0 ? prefNum[ll - 1][N - 1] : 0) - cntSmaller;
+
+        res += 1ll * cntSmaller * vals[a[i]] - sumSmaller;
+        res += sumBigger - 1ll * cntBigger * vals[a[i]];
+    }
+    return res;
+}
+
+int main() {
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+    cin >> n >> q;  
+    for (int i = 0; i < n; i++) {
+        cin >> a[i];
+        vals.push_back(a[i]);
+    }
+    sort(vals.begin(), vals.end());
+    vals.resize(unique(vals.begin(), vals.end()) - vals.begin());
+    
+    for (int i = 0; i < n; i++) {
+        a[i] = lower_bound(vals.begin(), vals.end(), a[i]) - vals.begin();
+    }
+
+    numBlock = (n - 1) / B_SIZE + 1;
+    for (int i = 0; i < n; i++) {
+        b[i / B_SIZE].add(i, a[i]);
+    }
+    for (int i = 0; i < numBlock; i++) b[i].build();
+    for (int i = 0; i < numBlock; i++) {
+        for (int j = 0; j < numBlock; j++) {
+            dp[i][j] = getVal(i, b[i].l, b[i].r, j, b[j].l, b[j].r);
+            if (j > 0) dp[i][j] += dp[i][j - 1];
+        }
+    }
+
+    for (int i = 0; i < numBlock; i++) {
+        for (int j = b[i].l; j <= b[i].r; j++) {
+            curNum[a[j]]++;
+            curSum[a[j]] += vals[a[j]];
+        }
+        for (int j = 0; j < N; j++) {
+            prefSum[i][j] = curSum[j];
+            if (j > 0) prefSum[i][j] += prefSum[i][j - 1];
+            if (i > 0) prefSum[i][j] += prefSum[i - 1][j];
+
+            prefNum[i][j] = curNum[j];
+            if (j > 0) prefNum[i][j] += prefNum[i][j - 1];
+            if (i > 0) prefNum[i][j] += prefNum[i - 1][j];            
+        }
+    }
+
+    while (q--) {
+        int l, r, ll, rr;
+        cin >> l >> r >> ll >> rr;
+        l--, r--, ll--, rr--;
+        int lBlock = l / N_BLOCK;
+        int rBlock = r / N_BLOCK;
+        int llBlock = ll / N_BLOCK;
+        int rrBlock = rr / N_BLOCK;
+        long long res = getBlockBlock(lBlock + 1, rBlock - 1, llBlock + 1, rrBlock - 1);
+        
+        res += getTailBlock(l, b[lBlock].r, llBlock + 1, rrBlock - 1);
+        res += getTailBlock(b[rBlock].l, r, llBlock + 1, rrBlock - 1);
+        res += getTailBlock(ll, b[llBlock].r, lBlock + 1, rBlock - 1);
+        res += getTailBlock(b[rrBlock].l, rr, lBlock + 1, rBlock - 1);
+
+        res += getVal(lBlock, l, b[lBlock].r, llBlock, ll, b[llBlock].r);
+        res += getVal(lBlock, l, b[lBlock].r, rrBlock, b[rrBlock].l, rr);
+        res += getVal(rBlock, b[rBlock].l, r, llBlock, ll, b[llBlock].r);
+        res += getVal(rBlock, b[rBlock].l, r, rrBlock, b[rrBlock].l, rr);
+        
+        cout << res << endl;
+    }
+    return 0;
+}

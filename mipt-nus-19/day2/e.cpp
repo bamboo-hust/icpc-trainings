@@ -1,0 +1,38 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+int main() {
+    int tc;
+    cin >> tc;
+    while (tc--) {
+        uint32_t x, y;
+        cin >> x >> y;
+        if (y == 0) {
+            cout << "Yes\n";
+            continue;
+        }
+        string xx, yy;
+        xx = yy = "";
+        while (x) {
+            xx += (char)(x % 2 + '0');
+            x /= 2;
+        }
+        while (y % 2 == 0) y /= 2;
+        while (y) {
+            yy += (char)(y % 2 + '0');
+            y /= 2;
+        }
+        int found = 0;
+        for (int i = 0; i < xx.size(); i++) {
+            for (int j = i; j < xx.size(); j++) {
+                string now = xx.substr(i, j - i + 1);
+                if (now == yy) {
+                    found = 1;
+                }
+            }
+        }
+        cout << (found ? "Yes" : "No") << '\n';
+    }
+    return 0;
+}

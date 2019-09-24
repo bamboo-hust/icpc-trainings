@@ -1,0 +1,49 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+const int N = 1e4 + 5;
+
+int lab[N];
+int deg[N];
+int n, m;
+
+int root(int u) {
+    if (!lab[u]) return u;
+    return lab[u] = root(lab[u]);
+}
+
+bool join(int u, int v) {
+    u = root(u); v = root(v);
+    if (u == v) return false;
+    lab[u] = v;
+    return true;
+}
+
+int main() {
+    int T; cin >> T;
+    while (T--) {
+        cin >> n >> m;
+        for (int i = 1; i <= n; ++i) lab[i] = 0;
+        for (int i = 1; i <= n; ++i) deg[i] = 0;
+        set< pair<int, int> > S;
+        for (int i = 1; i <= n; ++i) {
+            S.insert(make_pair(deg[i], i));
+        }
+        int num_merged = 0;
+        while (!S.empty() && num_merged < n - 1) {
+            int u = S.begin()->second;
+            S.erase(S.begin());
+            cout << "? " << u << endl;
+            int v;
+            cin >> v;
+            if (v == -1) {
+                continue;
+            }
+            S.erase(make_pair(deg[v], v)); S.insert(make_pair(++deg[v], v));
+            S.insert(make_pair(++deg[u], u));
+            num_merged += join(u, v);
+        }
+        cout << (num_merged == n - 1 ? "+" : "-") << endl;
+    }
+}

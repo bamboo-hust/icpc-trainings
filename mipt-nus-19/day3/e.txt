@@ -1,0 +1,86 @@
+#include <bits/stdc++.h>
+#define LL long long
+using namespace std;
+
+const int N = 2e5 + 5;
+
+int n;
+int x[N], y[N];
+
+map< int, vector<int> > row, col;
+
+LL solve1() {
+    LL res = 0;
+    for (const auto &r : row) {
+        LL row_cnt = r.second.size();
+        for (int c : r.second) {
+            res = max(res, (LL)col[c].size() - 1LL);
+        }
+    }
+    return res;
+}
+
+LL solve2() {
+    vector< pair<int, int> > a;
+    for (int i = 0; i < n; ++i) {
+        a.push_back(make_pair(x[i], y[i]));
+    }
+    sort(begin(a), end(a));
+
+    LL res = 0;
+    vector< pair<int, int> > R, C;
+    for (const auto &r : row) {
+        R.push_back(make_pair(r.second.size(), r.first));
+    }
+    for (const auto &c : col) {
+        C.push_back(make_pair(c.second.size(), c.first));
+    }
+    sort(begin(R), end(R));
+    sort(begin(C), end(C));
+    vector<int> pos(row.size(), col.size() - 1);
+    set< pair<int, int> > S;
+    for (int i = 0; i < R.size(); ++i) {
+        S.insert(make_pair(R[i].first + C[pos[i]].first - 1, i));
+    }
+    while (!S.empty()) {
+        int sum = S.rbegin()->first;
+        int id = S.rbegin()->second;
+        S.erase(--S.end());
+        if (!binary_search(begin(a), end(a), make_pair(R[id].second, C[pos[id]].second))) {
+            return sum + 1;
+        }
+        if (pos[id] > 0) {
+            --pos[id];
+            S.insert(make_pair(R[id].first + C[pos[id]].first - 1, id));
+        }
+    }
+    return 0;
+}
+
+LL calc() {
+    LL res = 0;
+    for (int i = 0; i < n; ++i) {
+        res += 1LL * (row[x[i]].size() - 1) * (col[y[i]].size() - 1);
+    }
+    cerr << "calc " <<res << endl;
+    return res;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin >> n;
+    for (int i = 0; i < n; ++i) {
+        cin >> x[i] >> y[i];
+        row[x[i]].push_back(y[i]);
+        col[y[i]].push_back(x[i]);
+    }
+
+    LL res = 0;
+    res = max(res, solve1());
+    cerr << "solve1 " << res << endl;
+    res = max(res, solve2());
+    cerr << "solve2 " << res << endl;
+    res += calc();
+
+    cout << res << endl;
+}

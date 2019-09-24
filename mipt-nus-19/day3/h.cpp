@@ -1,0 +1,145 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+const int N = 200005;
+const int M = 77;
+
+vector< bitset<M> > a;
+int n, m;
+
+int mul[M];
+int b[M];
+
+vector<int> cols[M];
+
+bitset<M> important;
+
+bool add(vector< bitset<M> > &a, bitset<M> v) {
+    for (int i = 0; i < M; ++i) {
+        if (v[i]) {
+            if (a[i][i]) {
+                v ^= a[i];
+            } else {
+                a[i] = v;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool possible(bitset<M> v) {
+    vector< bitset<M> > base(M);
+    for (int i = 0; i < M; ++i) {
+        bitset<M> cur = a[i] & important;
+        add(base, cur);
+    }
+    bool res = !add(base, v);
+    cerr << "possible " << v << ' ' << res << endl;
+    return res;
+}
+
+bool possible(bitset<M> v, int i, int j, int vali, int valj) {
+    v[i] = vali; v[j] = valj;
+    return possible(v);
+}
+
+
+bool possible(bitset<M> v, int i, int vali) {
+    v[i] = vali;
+    return possible(v);
+}
+
+long long pow3(long long n) {
+    long long res = 1;
+    while (n > 0) {
+        res *= 3;
+        n--;
+    }
+    return res;
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin >> n >> m;
+    a.resize(M);
+    for (int i = 0; i < n; ++i) {
+        string s;
+        cin >> s;
+        bitset<M> v;
+        for (int i = 0; i < s.size(); ++i) {
+            v[i] = s[i] == '1';
+        }
+        add(a, v);
+    }
+
+    for (int i = 0; i < M; ++i) if (a[i][i]) {
+        /*for (int j = 0; j < M; ++j) {
+            cout << a[i][j];
+        }*/
+        cout << a[i] << endl;
+    }
+
+    for (int i = 0; i < m; ++i) {
+        cin >> mul[i] >> b[i];
+    }
+
+    for (int i = 0; i < m; ++i) {
+        cols[b[i]].push_back(i);
+    }
+
+    bitset<M> res;
+    for (int i = M - 1; i >= 0; --i) {
+        if (cols[i].empty()) continue;
+        if (cols[i].size() == 2) {
+            if (mul[cols[i][0]] < mul[cols[i][1]]) swap(cols[i][0], cols[i][1]);
+            int l = cols[i][0];
+            int r = cols[i][1];
+            important[l] = important[r] = 1;
+
+            if (possible(res, l, r, 1, 0)) {
+                res[l] = 1; res[r] = 0;
+                break;
+            }
+
+            if (possible(res, l, r, 1, 1)) {
+                res[l] = 1; res[r] = 1;
+                break;
+            }
+
+            if (possible(res, l, r, 0, 0)) {
+                res[l] = 0; res[r] = 0;
+                break;
+            }
+
+            res[l] = 0; res[r] = 1;
+        } else {
+            important[cols[i][0]] = 1;
+            if (mul[cols[i][0]] > 0) {
+                if (possible(res, cols[i][0], 1)) {
+                    res[cols[i][0]] = 1;
+                    break;
+                } else {
+                    res[cols[i][0]] = 0;
+                }
+            }
+            if (mul[cols[i][0]] < 0) {
+                if (possible(res, cols[i][0], 0)) {
+                    res[cols[i][0]] = 0;
+                    break;
+                } else {
+                    res[cols[i][0]] = 1;
+                }
+            }
+        }
+    }
+
+    long long ans = 0;
+    for (int i = 0; i < M; ++i) {
+        if (res[i]) {
+            ans += 1LL * mul[i] * pow3(b[i]);
+        }
+    }
+    cout << ans << endl;
+}
