@@ -1,0 +1,4 @@
+/home/quanglm1998/Downloads/clion-2019.2.2/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/quanglm1998/algorithm/icpc/icpc-trainings/mipt-nus-19/day4
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/quanglm1998/algorithm/icpc/icpc-trainings/mipt-nus-19/day4/cmake-build-debug
