@@ -1,0 +1,110 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+const int INF = 1e9;
+const int N = 3e5 +5;
+
+struct Node {
+    pair<int, int> maxBlack;
+    pair<int, int> maxWhite;
+    pair<int, int> minBlack;
+    pair<int, int> minWhite;
+    int minDiff;
+    int x, y; // minDiff = a[y] - a[x];
+};
+
+Node T[N * 4];
+int a[N];
+int n;
+
+void pull(int k, int l, int r) {
+    if (l == r) {
+        T[k].minDiff = INF;
+        T[k].x = T[k].y = l;
+    } else {
+        Node L = T[k * 2];
+        Node R = T[k * 2 + 1];
+        T[k].minDiff = L.minDiff; T[k].x = L.x; T[k].y = L.y;
+        if (T[k].minDiff > R.minDiff) {
+            T[k].minDiff = R.minDiff;
+            T[k].x = R.x;
+            T[k].y = R.y;
+        }
+        if (T[k].minDiff > R.minWhite.first - L.maxBlack.first) {
+            //cerr << "upd " << l << ' ' << r << ' ' << R.minWhite.first << ' ' << L.maxBlack.first << endl;
+            T[k].minDiff = R.minWhite.first - L.maxBlack.first;
+            T[k].x = L.maxBlack.second;
+            T[k].y = R.minWhite.second;
+        }
+        if (T[k].minDiff > R.minBlack.first - L.maxWhite.first) {
+            T[k].minDiff = R.minBlack.first - L.maxWhite.first;
+            T[k].x = L.maxWhite.second;
+            T[k].y = R.minBlack.second;
+        }
+
+        T[k].minBlack = min(L.minBlack, R.minBlack);
+        T[k].maxBlack = max(L.maxBlack, R.maxBlack);
+        T[k].minWhite = min(L.minWhite, R.minWhite);
+        T[k].maxWhite = max(L.maxWhite, R.maxWhite);
+    }
+    //cerr << "after pull " << k << ' ' << l << ' ' << r << endl;
+    //cerr << T[k].minWhite.first << ' ' << T[k].maxBlack.first << endl;
+}
+
+void init(int k, int l, int r) {
+    if (l == r) {
+        // initially white
+        T[k].minBlack = {+INF, l};
+        T[k].maxBlack = {-INF, l};
+        T[k].minWhite = {a[l], l};
+        T[k].maxWhite = {a[l], l};
+        T[k].minDiff = +INF;
+        T[k].x = T[k].y = l;
+    } else {
+        init(k * 2, l, l + r >> 1);
+        init(k * 2 + 1, (l + r >> 1) + 1, r);
+        pull(k, l, r);
+    }
+}
+
+void update(int k, int l, int r, int i) {
+    // make node i black
+    if (i < l || r < i) return;
+    if (l == r) {
+        T[k].maxBlack = T[k].minBlack = {a[i], i};
+        T[k].maxWhite = {-INF, i};
+        T[k].minWhite = {+INF, i};
+        return;
+    }
+    update(k * 2, l, l + r >> 1, i);
+    update(k * 2 + 1, (l + r >> 1) + 1, r, i);
+    pull(k, l, r);
+}
+
+int main() {
+    int tc; cin >> tc;
+    while (tc--) {
+        cin >> n;
+        for (int i = 1; i <= n; ++i) {
+            cin >> a[i];
+        }
+        init(1, 1, n);
+        //return 0;
+        update(1, 1, n, 1);
+        vector<bool> in_tree(n + 1);
+        in_tree[1] = true;
+        long long res = 0;
+        for (int i = 1; i < n; ++i) {
+            int u = T[1].x;
+            int v = T[1].y;
+            int w = T[1].minDiff;
+            if (in_tree[u]) swap(u, v);
+            //cerr << "add edge " << u << ' ' << v << ' ' << w << endl;
+            res += w;
+            in_tree[u] = true;
+            update(1, 1, n, u);
+        }
+        cout << res << '\n';
+    }
+}

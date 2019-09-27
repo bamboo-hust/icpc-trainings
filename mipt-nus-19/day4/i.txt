@@ -1,0 +1,98 @@
+#include <bits/stdc++.h>
+
+using namespace std;
+
+const int N = 610;
+const int K = 20010;
+
+int n, m, k;
+
+inline short add(short u, short v) {
+    return (u += v) >= m ? u - m : u;
+}
+
+inline short mul(short u, short v) {
+    return u * v % m;
+}
+
+struct Point {
+    int x, y;
+    Point(int x = 0, int y = 0) : x(x), y(y) {}
+    Point operator + (const Point &u) const {
+        return Point(x + u.x, y + u.y);
+    }
+    Point operator - (const Point &u) const {
+        return Point(x - u.x, y - u.y);
+    }
+    long long operator % (const Point &u) const {
+        return 1ll * x * u.y - 1ll * u.x * y;
+    }
+};
+
+Point a[N], b[K];
+bool parity[N][N];
+bool dead[N][N];
+vector<short> dp[N][N];
+
+long long ccw(Point u, Point v, Point w) {
+    u = v - u;
+    v = w - v;
+    return u % v;
+}
+
+bool check(int root, int l, int r) {
+    return parity[root][l] == parity[root][r];
+}
+
+short go(int root, int l, int r) {
+    if (l + 1 == r) return 1;
+    if (dp[root][l][r - l] != -1) return dp[root][l][r - l];
+    short &res = dp[root][l][r - l];
+    res = 0;
+    if (check(l, l + 1, r) && !dead[l][r]) res = add(res, go(l, l + 1, r));
+    if (check(root, l + 1, r) && !dead[root][l + 1]) res = add(res, go(root, l + 1, r));
+    for (int m = l + 2; m < r; m++) {
+        if (dead[root][m] || dead[m][l] || !check(root, m, r) || !check(l, l + 1, m)) continue;
+        short foo = go(root, m, r);
+        short bar = go(l, l + 1, m);
+        res = add(res, mul(foo, bar));
+    }
+    return res;
+}
+
+int main() {
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+//    cin >> n >> k >> m;
+    n = 200;
+    m = 10007;
+    k = 0;
+    for (int i = 1; i <= n; i++) {
+//        cin >> a[i].x >> a[i].y;
+    }
+    reverse(a + 1, a + n + 1);
+    for (int i = 1; i <= k; i++) {
+//        cin >> b[i].x >> b[i].y;
+    }
+    for (int i = 1; i <= n; i++) {
+        auto cmp = [&i](const Point &u, const Point &v) {
+            Point uu = u - a[i];
+            Point vv = v - a[i];
+            return uu % vv > 0;
+        };
+        sort(b + 1, b + k + 1, cmp);
+        int cur = 0;
+        for (int j = i + 1; j <= n; j++) {
+            while (cur < k && ccw(a[i], b[cur + 1], a[j]) >= 0) cur++;
+            parity[i][j] = cur & 1;
+            dead[i][j] = dead[j][i] = (cur > 0 && ccw(a[i], b[cur], a[j]) == 0);
+        }
+    }
+    for (int i = 1; i <= n; i++) {
+        for (int j = i + 1; j <= n; j++) {
+            dp[i][j].resize(n - j + 1, -1);
+        }
+    }
+    cout << go(1, 2, n) << endl;
+    return 0;
+}
