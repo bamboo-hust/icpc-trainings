@@ -1,0 +1,105 @@
+//
+// Created by lad on 9/28/19.
+//
+
+#include <bits/stdc++.h>
+
+using namespace std;
+
+const int N = 16;
+const double EPS = 1e-10;
+
+int cmp(double u, double v) {
+    if (abs(u - v) < EPS) return 0;
+    if (u + EPS < v) return -1;
+    return 1;
+}
+
+int n, m;
+double p[N];
+int numberOfBit[1 << N];
+int sum[N][1 << N];
+int h[N][N];
+double productP[1 << N], productOneMinusP[1 << N];
+double sosDP[1 << N], sosC[1 << N];
+double dp[N][1 << N];
+
+int main() {
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+    cout << fixed;
+    cout.precision(10);
+    while (cin >> m) {
+        cin >> n;
+        cerr << "start case" << endl;
+        cerr << n << ' ' << m << endl;
+        for (int i = 0; i < m; i++) cin >> p[i];
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                cin >> h[i][j];
+            }
+        }
+
+        fill(numberOfBit, numberOfBit + (1 << m), 0);
+        for (int i = 0; i < n; i++) fill(sum[i], sum[i] + (1 << m), 0);
+        productOneMinusP[0] = productP[0] = 1.0;
+
+        vector<int> ls;
+        for (int i = 0; i < m; i++) {
+            if (cmp(p[i], 1.0) == 0) {
+                numberOfBit[0]++;
+                for (int j = 0; j < n; j++) {
+                    sum[j][0] += h[i][j];
+                }
+            } else {
+                ls.push_back(i);
+            }
+        }
+
+        int sz = ls.size();
+
+        for (int mask = 1; mask < (1 << sz); mask++) {
+            int pos = -1;
+            for (int i = 0; i < sz; i++) if (mask >> i & 1) {
+                pos = i;
+                break;
+            }
+            int lastMask = mask ^ (1 << pos);
+            numberOfBit[mask] = numberOfBit[lastMask] + 1;
+            productP[mask] = productP[lastMask] * p[ls[pos]];
+            productOneMinusP[mask] = productOneMinusP[lastMask] * (1.0 - p[ls[pos]]);
+
+            for (int i = 0; i < n; i++) {
+                sum[i][mask] = sum[i][lastMask] + h[ls[pos]][i];
+            }
+        }
+
+        for (int mask = 0; mask < (1 << sz); mask++) {
+            dp[n - 1][mask] = sum[n - 1][mask];
+            cout << mask << ' '  << dp[n - 1][mask] << endl;
+        }
+        for (int i = n - 1; i > 0; i--) {
+            for (int mask = 0; mask < (1 << sz); mask++) {
+                sosDP[mask] = dp[i][mask] * productP[mask] / productOneMinusP[mask];
+                sosC[mask] = numberOfBit[mask] * sum[i][mask] * productP[mask] / productOneMinusP[mask];
+            }
+
+            for (int j = 0; j < sz; j++) {
+                for (int mask = 0; mask < (1 << sz); mask++) {
+                    if (mask >> j & 1) {
+                        sosDP[mask] += sosDP[mask ^ (1 << j)];
+                        sosC[mask] += sosC[mask ^ (1 << j)];
+                    }
+                }
+            }
+
+            cerr << "# " << i - 1 << endl;
+            for (int mask = 0; mask < (1 << sz); mask++) {
+                dp[i - 1][mask] = sosDP[mask] * productOneMinusP[mask] + sosC[mask] * productOneMinusP[mask] / numberOfBit[mask];
+                cerr << mask << ' ' << dp[i - 1][mask] << ' ' << sosDP[mask] * productOneMinusP[mask] << ' ' << sosC[mask] * productOneMinusP[mask] / numberOfBit[mask] << endl;
+            }
+        }
+        cout << dp[0][(1 << sz) - 1] << '\n';
+    }
+    return 0;
+}

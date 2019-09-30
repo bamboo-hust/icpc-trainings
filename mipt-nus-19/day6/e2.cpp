@@ -39,8 +39,7 @@ int main() {
         } else if (c == 'R') {
             if (it != L.end()) {
                 if (it != L.begin()) {
-                    auto pre = it;
-                    --pre;
+                    auto pre = it; --pre;
                     it->sum = pre->sum + it->x;
                 } else {
                     it->sum = it->x;
@@ -52,15 +51,5 @@ int main() {
             int k; cin >> k;
             cout << S[k - 1] << '\n';
         }
-
-        // cerr << "begin list\n";
-        // for (auto e : L) {
-        //     cerr << e.x << ' ' << e.sum << endl;
-        // }
-        // cerr << "end list " << endl;
-        // for (int v : S) {
-        //     cerr << v << ' ';
-        // }
-        // cerr << endl << endl;
     }
 }

@@ -1,2 +1,0 @@
-/home/quanglm1998/algorithm/icpc/icpc-trainings/mipt-nus-19/day4/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/quanglm1998/algorithm/icpc/icpc-trainings/mipt-nus-19/day4/cmake-build-debug/CMakeFiles/edit_cache.dir
