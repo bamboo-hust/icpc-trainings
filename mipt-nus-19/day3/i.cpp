@@ -90,9 +90,9 @@ int main() {
             }
     }
 
-    cout << res << endl;
-    for (int i = 1; i <= n; ++i) cout << in_path[i][0]; cout << endl;
-    for (int i = 1; i <= n; ++i) cout << in_path[i][1]; cout << endl;
+    // cout << res << endl;
+    // for (int i = 1; i <= n; ++i) cout << in_path[i][0]; cout << endl;
+    // for (int i = 1; i <= n; ++i) cout << in_path[i][1]; cout << endl;
 
     for (int i = 1; i <= n; ++i) {
         for (int j = 0; j <= 1; ++j) if (in_path[i][j] && in_path[i + 1][j]) {
