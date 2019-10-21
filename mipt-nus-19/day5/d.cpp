@@ -13,7 +13,7 @@ int num_com;
 int n, m;
 
 int id(int x, int y) {
-    return (x - 1) * m + y;
+    return (x - 1) * n + y;
 }
 
 int tin[N * N];
@@ -81,7 +81,6 @@ long long solve() {
         bool self_loop = false;
         ++num_com;
         dfs(i, v, e, self_loop);
-        //cerr << v << ' ' << e << endl;
         if (e > v) return 0;
         if (e == v) {
             if (!self_loop) {
