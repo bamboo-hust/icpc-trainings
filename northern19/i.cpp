@@ -15,7 +15,6 @@ long long get(long long r, long long d) {
     return res;
 }
 
-
 // remainder <= d
 long long getSum(long long d) {
     if (d < 0) return 0ll;
@@ -44,6 +43,7 @@ int getDigitWithLen(int l, long long k, long long d) {
     long long id = (k - 1) / l + 1;
     k -= (id - 1) * l;
     long long t = (p[l - 1] - d - 1) / w + 1;
+    if (p[l - 1] - d - 1 < 0) t = 0;
     return getDigitWithNumber(w * (t + id - 1) + d, k);
 }
 

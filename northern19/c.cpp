@@ -5,13 +5,15 @@ using namespace std;
 const int N = 110;
 
 int n, m, p;
-int s[N], r[N];
+int s[N], r[N], id[N], pos[N];
 
 const int V = 1e6;
-const int INF = 1e9 + 10;
+const long long INF = 1e18;
+
 struct Flow {
     vector<int> adj[V];
-    int to[V], c[V], f[V];
+    int to[V];
+    long long c[V], f[V];
     int n, s, t, cnt;
     int d[V];
     int cur[V];
@@ -22,7 +24,7 @@ struct Flow {
         cnt = 0;
         for (int i = 0; i < n; i++) adj[i].clear();
     }
-    int addEdge(int u, int v, int _c) {
+    int addEdge(int u, int v, long long _c) {
         to[cnt] = v, c[cnt] = _c, f[cnt] = 0;
         adj[u].push_back(cnt++);
         to[cnt] = u, c[cnt] = 0, f[cnt] = 0;
@@ -47,7 +49,7 @@ struct Flow {
         }
         return d[t] != -1;
     }
-    int dfs(int u, int res) {
+    long long dfs(int u, long long res) {
         if (u == t) return res;
         for (int &it = cur[u]; it < adj[u].size(); it++) {
             int id = adj[u][it];
@@ -63,12 +65,12 @@ struct Flow {
         }
         return 0;
     }
-    int maxFlow() {
-        int res = 0;
+    long long maxFlow() {
+        long long res = 0;
         while (bfs()) {
             for (int i = 0; i < n; i++) cur[i] = 0;
             while (1) {
-                int foo = dfs(s, INF);
+                long long foo = dfs(s, INF);
                 if (!foo) break;
                 res += foo;
             }
@@ -77,20 +79,20 @@ struct Flow {
     }
 } f;
 
-bool check(int u) {
+bool check(long long u) {
     f.init(2 + n * m + n, 0, n * m + n + 1);
     for (int i = 1; i <= m; i++) {
         int last = f.s;
         int need = (p - 1) / s[i] + 1;
         for (int j = 1; j <= n; j++) {
             int cur = (i - 1) * n + j;
-            f.addEdge(last, cur, (u - r[j] + 1) / need);
+            f.addEdge(last, cur, (u - r[id[j]] + 1) / need);
             last = cur;
         }
     }
     for (int i = 1; i <= m; i++) {
         for (int j = 1; j <= n; j++) {
-            int id = (i - 1) * n + j;
+            int id = (i - 1) * n + pos[j];
             f.addEdge(id, n * m + j, 1);
         }
     }
@@ -106,10 +108,15 @@ int main() {
     cin >> m >> n >> p;
     for (int i = 1; i <= m; i++) cin >> s[i];
     for (int i = 1; i <= n; i++) cin >> r[i];
+    for (int i = 1; i <= n; i++) id[i] = i;
+    sort(id + 1, id + n + 1, [](int u, int v) {
+        return r[u] < r[v];
+    });
+    for (int i = 1; i <= n; i++) pos[id[i]] = i;
 
-    int low = 0, high = INF;
+    long long low = *max_element(r + 1, r + n + 1) - 1, high = INF;
     while (high - low > 1) {
-        int mid = low + high >> 1;
+        long long mid = low + high >> 1;
         if (check(mid)) high = mid;
         else low = mid;
     }
