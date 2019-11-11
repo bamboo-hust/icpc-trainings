@@ -154,31 +154,6 @@ int dfs(int u, int colorOfPar) {
     return res;
 }
 
-void calc(int u, int &res) {
-    if (u > n) {
-        res++;
-        return;
-    }
-    for (int i = 1; i <= c; i++) {
-        int found = 0;
-        for (int v : adj[u]) {
-            found |= (colors[v] == i);
-        }
-        if (!found) {
-            colors[u] = i;
-            calc(u + 1, res);
-            colors[u] = 0;
-        }
-    }
-}
-
-int naive() {
-    int res = 0;
-    colors.resize(n + 1);
-    calc(1, res);
-    return res; 
-}
-
 int main() {
     ios_base::sync_with_stdio(0);
     cin.tie(0);
@@ -195,7 +170,6 @@ int main() {
         else cout << 0 << endl;
         return 0;
     }
-    // cout << naive() << endl;
     if (m == n - 1) {
         cout << mul(c, power(c - 1, n - 1)) << endl;
         return 0;
@@ -272,7 +246,6 @@ int main() {
         bigAdj[i].resize(unique(bigAdj[i].begin(), bigAdj[i].end()) - bigAdj[i].begin());
     }
 
-    for (int i = 0; i < bigVertices.size(); i++) isGood[i] = 1;
     colors.resize(bigVertices.size(), 0);
     dfsInit(0);
     int now = dfs(0, 0);
